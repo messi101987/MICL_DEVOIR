@@ -16,7 +16,7 @@ section .rodata
     nomFichier      DB      `message`, 0
     msgErreur       DB      `Error : file not found or permission denied`
     lgrMsgErreur    DQ      lgrMsgErreur - msgErreur
-    retourLigne 	DQ		`'\n`
+    retourLigne 	DQ		`\n`
     lgrRetourLigne	DQ		lgrRetourLigne - retourLigne
     msgReussite     DB      `fichier ouvert avec succès \n`
     lgrMsgReussite  DQ      lgrMsgReussite - msgReussite
@@ -38,7 +38,11 @@ echec:
     mov     rsi, msgErreur  ;adresse du 1er caractere
     mov     rdx, [lgrMsgErreur] ;nombre de car
     syscall
-    mov     rax, 1
+    mov     rax, 1          ;write
+    mov     rdi, 1   
+    mov     rsi, retourLigne  ;adresse du 1er caractere
+    mov     rdx, [lgrRetourLigne] ;nombre de car
+    syscall
     jmp fin
 
 reussite:
