@@ -10,10 +10,12 @@ section .data
 ; dans le fichier 'message'
 
 	position 	 DW 	5,8,11,14,100,19,34,40,44,100,55,100,57,70,80,83,84,99,100,101
+	length		 DB		length - position
 
 
 section .rodata
     nomFichier      DB      `message`, 0
+    output	        DB      `fileOut`, 0
     msgErreur       DB      `Error : file not found or permission denied`
     lgrMsgErreur    DQ      lgrMsgErreur - msgErreur
     retourLigne 	DQ		`\n`
@@ -55,7 +57,15 @@ reussite:
     mov     rdi, nomFichier ; /adresse/ du 1er caractère du noms
     syscall
     mov     rax, 0
+    mov  	r8b, 0
+    mov 	ax, length 
+pour:
+	cmp     r8b, 20
+	jz fin_pour
+    syscall
 
+
+fin_pour:
 
 fin:
 
