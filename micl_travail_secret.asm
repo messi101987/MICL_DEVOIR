@@ -14,23 +14,31 @@ section .data
 
 
 section .rodata
-    nomFichier      DB      `message`, 0
+    message	      	DB      `message`, 0
     output	        DB      `fileOut`, 0
     msgErreur       DB      `Error : file not found or permission denied`
     lgrMsgErreur    DQ      lgrMsgErreur - msgErreur
     retourLigne 	DQ		`\n`
     lgrRetourLigne	DQ		lgrRetourLigne - retourLigne
-    msgReussite     DB      `fichier ouvert avec succès \n`
-    lgrMsgReussite  DQ      lgrMsgReussite - msgReussite
+
+
+section .bss
+    text			resb	18
+    fd 				resq	1
+    longeurText 	resw	1
+
 
 section .text
 
+
 start:
 
-	mov     rax, 2          ; open
-    mov     rdi, nomFichier ; /adresse/ du 1er caractère du noms
-    mov     rsi, 1q | 2000q ; WRONLY + O_APPEND
+	mov     rax, 2          
+    mov     rdi, message 
+    mov     rsi, 1q|100q|2000q
+    mov 	rdx, 644q 
     syscall
+     mov [fd], rax
     cmp     rax, 3
     jz reussite
 
@@ -40,6 +48,9 @@ echec:
     mov     rsi, msgErreur  ;adresse du 1er caractere
     mov     rdx, [lgrMsgErreur] ;nombre de car
     syscall
+
+   
+
     mov     rax, 1          ;write
     mov     rdi, 1   
     mov     rsi, retourLigne  ;adresse du 1er caractere
@@ -48,20 +59,26 @@ echec:
     jmp fin
 
 reussite:
-    mov     rax, 1          ;write
-    mov     rdi, 1          ; stdout, sortie standard
-    mov     rsi, msgReussite  ;adresse du 1er caractere
-    mov     rdx, [lgrMsgReussite] ;nombre de car
+
+    mov     rax, 8
+    mov     rdi, [fd]
+    mov     rsi, -1
+    mov     rdx, 2
     syscall
-    mov     rax, 3         ; close
-    mov     rdi, nomFichier ; /adresse/ du 1er caractère du noms
-    syscall
-    mov     rax, 0
-    mov  	r8b, 0
-    mov 	ax, length 
-pour:
-	cmp     r8b, 20
-	jz fin_pour
+
+    or      rax, 0x30
+    mov     [longeurText], rax
+    
+	mov 	rax, 0
+	mov 	rdi, [fd]
+	mov 	rsi, text			
+	mov 	rdx, 17
+
+
+    mov     rax, 1          
+    mov     rdi, 1         
+    mov     rsi, text 
+    mov 	rdx, 17
     syscall
 
 
