@@ -10,22 +10,20 @@ section .data
 ; dans le fichier 'message'
 
 	position 	 DW 	5,8,11,14,100,19,34,40,44,100,55,100,57,70,80,83,84,99,100,101
-	length		 DB		length - position
-
 
 section .rodata
     message	      	DB      `message`, 0
     output	        DB      `fileOut`, 0
     msgErreur       DB      `Error : file not found or permission denied`
-    lgrMsgErreur    DQ      lgrMsgErreur - msgErreur
+    lgrMsgErreur    DQ      $ - msgErreur
     retourLigne 	DQ		`\n`
-    lgrRetourLigne	DQ		lgrRetourLigne - retourLigne
+    lgrRetourLigne	DQ		$ - retourLigne
 
 
 section .bss
-    text			resb	18
-    fd 				resq	1
-    longeurText 	resw	1
+    fd1 			resq	1
+    fd2				resq	1
+    car				resb	1
 
 
 section .text
@@ -35,12 +33,17 @@ start:
 
 	mov     rax, 2          
     mov     rdi, message 
-    mov     rsi, 1q|100q|2000q
-    mov 	rdx, 644q 
+    mov     rsi, 2q
+    mov 	rdx, 644q
     syscall
-     mov [fd], rax
+
+    mov [fd1], RAX
+
     cmp     rax, 3
     jz reussite
+
+
+
 
 echec:
     mov     rax, 1          ;write
@@ -60,29 +63,46 @@ echec:
 
 reussite:
 
+    mov     rax, 2          
+    mov     rdi, output  
+    mov     rsi, 2q | 100q | 2000q ; WRONLY + O_CREAT + O_APPEND
+    mov     rdx, 755q
+    syscall
+
+     mov [fd2], RAX
+
+
+	mov r8b, 0
+pour:
+	cmp r8b, 20
+	jz fin_pour
+
+    mov r9w, [position + r8 * 2]
+
     mov     rax, 8
-    mov     rdi, [fd]
-    mov     rsi, -1
-    mov     rdx, 2
+    mov     rdi, [fd1]
+    mov     rsi, r9
+    mov     rdx, 0
     syscall
 
-    or      rax, 0x30
-    mov     [longeurText], rax
-    
 	mov 	rax, 0
-	mov 	rdi, [fd]
-	mov 	rsi, text			
-	mov 	rdx, 17
+	mov 	rdi, [fd1]
+	mov 	rsi, car		
+	mov 	rdx, 1
+	syscall
 
 
-    mov     rax, 1          
-    mov     rdi, 1         
-    mov     rsi, text 
-    mov 	rdx, 17
+    mov     rax, 1         
+    mov     rdi, [fd2]     
+    mov     rsi, car 
+    mov 	rdx, 1
     syscall
 
+	inc r8b
+	jmp pour
 
 fin_pour:
+
 
 fin:
 
