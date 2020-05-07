@@ -52,7 +52,7 @@ echec:
 
 reussite:
 
-    mov     rax, 2          
+    mov     rax, 2 
     mov     rdi, output  
     mov     rsi, 2q | 100q | 2000q ;
     mov     rdx, 755q
