@@ -14,10 +14,8 @@ section .data
 section .rodata
     message	      	DB      `message`, 0
     output	        DB      `fileOut`, 0
-    msgErreur       DB      `Error : file not found or permission denied`
-    lgrMsgErreur    DQ      $ - msgErreur
-    retourLigne 	DQ		`\n`
-    lgrRetourLigne	DQ		$ - retourLigne
+    msgErreur       DB      `Error : file not found or permission denied`, 0
+    retourLigne 	DB		`\n`
 
 
 section .bss
@@ -31,13 +29,13 @@ section .text
 
 start:
 
-	mov     rax, 2          
+	mov     rax, 2
     mov     rdi, message 
     mov     rsi, 2q
-    mov 	rdx, 644q
+    mov 	rdx, 0
     syscall
 
-    mov [fd1], RAX
+    mov [fd1], rax
 
     cmp     rax, 3
     jz reussite
@@ -46,30 +44,21 @@ start:
 
 
 echec:
-    mov     rax, 1          ;write
-    mov     rdi, 1          ; stdout, sortie standard
-    mov     rsi, msgErreur  ;adresse du 1er caractere
-    mov     rdx, [lgrMsgErreur] ;nombre de car
-    syscall
 
-   
+    mov rdi, msgErreur
+    call show_message
 
-    mov     rax, 1          ;write
-    mov     rdi, 1   
-    mov     rsi, retourLigne  ;adresse du 1er caractere
-    mov     rdx, [lgrRetourLigne] ;nombre de car
-    syscall
     jmp fin
 
 reussite:
 
     mov     rax, 2          
     mov     rdi, output  
-    mov     rsi, 2q | 100q | 2000q ; WRONLY + O_CREAT + O_APPEND
+    mov     rsi, 2q | 100q | 2000q ;
     mov     rdx, 755q
     syscall
 
-     mov [fd2], RAX
+     mov [fd2], rax
 
 
 	mov r8b, 0
@@ -103,6 +92,14 @@ pour:
 
 fin_pour:
 
+    mov     rax, 3
+    mov     rdi, [fd1]
+    syscall
+
+    mov     rax, 3
+    mov     rdi, [fd2]
+    syscall
+
 
 fin:
 
@@ -111,12 +108,33 @@ fin:
     syscall
 
 
-	
+show_message: 
+
+    push    rbp
+    mov     rbp, rsp
+
+    push    retourLigne
+    mov     rsi, rdi          
+    mov     rdi, 1          
+    mov     rdx, 1
+   
+.while:        
+    cmp     byte [rsi], 0   
+    jz      .end
+    mov     rax, 1
+    syscall
+    inc     rsi
+    jmp     .while   
+
+.end:
+    pop     rsi
+    mov     rdi, 1          
+    mov     rdx, 1
+    mov     rax, 1
+    syscall
+
+    mov     rsp, rbp
+    pop     rbp
+ 
+    ret
 		
-	
-    	
-
-
-
-
-
